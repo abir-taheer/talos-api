@@ -10,10 +10,15 @@ class Talos {
 	sessionID = "";
 	expires = new Date();
 	validSession = false;
+	queryCache = {};
+	useCache = true;
 
-	constructor(username, password) {
+	constructor(username, password, options = {}) {
 		this.username = username;
 		this.password = password;
+
+		if( options.cache === false )
+			this.useCache = false;
 	}
 
 	readyCSRFToken(){
@@ -64,37 +69,54 @@ class Talos {
 		});
 	}
 
-	validateCredentials(){
-		return new Promise(async (resolve) => {
-			if(this.validSession && new Date() < this.expires)
-				return resolve(true);
-
-			await this.readyCSRFToken();
-			await this.readySessionToken();
-			resolve(this.validSession && new Date() < this.expires);
-		});
+	sessionIsValid(){
+		return this.validSession && new Date() < this.expires;
 	}
 
-	async searchApi(query){
-		if(!await this.validateCredentials())
+	async authenticate(){
+		if(this.sessionIsValid())
+			return true;
+
+		await this.readyCSRFToken();
+		await this.readySessionToken();
+
+		return this.sessionIsValid();
+	}
+
+	async search(query, options = {}){
+		options.query = query;
+		let limit = options.limit = options.limit || 0;
+		let offset = options.offset = options.offset || 0;
+
+		let queryHash = JSON.stringify(options);
+
+		if(! options.force && this.queryCache[queryHash]){
+			return this.queryCache[queryHash];
+		}
+
+		let format = "json";
+
+		if(!await this.authenticate())
 			throw new Error("Invalid credentials cannot be used to query the API");
 
 		let cookieString = `sessionid=${this.sessionID}`;
 
-		let first_req = await axios.request({
-			url: "https://talos.stuy.edu/api/students/",
-			method: "GET",
-			withCredentials: true,
-			validateStatus: status => status >= 200 && status < 303,
-			headers:{Cookie: cookieString},
-			params: {
-				limit: 1,
-				search: query,
-				format: "json"
-			}
-		});
+		if(! limit){
+			let first_req = await axios.request({
+				url: "https://talos.stuy.edu/api/students/",
+				method: "GET",
+				withCredentials: true,
+				validateStatus: status => status >= 200 && status < 303,
+				headers:{Cookie: cookieString},
+				params: {
+					limit: 1,
+					search: query,
+					format
+				}
+			});
 
-		let result_limit = first_req.data.count + 1;
+			limit = first_req.data.count + 1;
+		}
 
 		let fetchResults = await axios.request({
 			url: "https://talos.stuy.edu/api/students/",
@@ -103,13 +125,24 @@ class Talos {
 			validateStatus: status => status >= 200 && status < 303,
 			headers:{Cookie: cookieString},
 			params: {
-				limit: result_limit,
-				search: query,
-				format: "json"
+				limit,
+				offset,
+				format,
+				search: query
 			}
 		});
 
-		return fetchResults.data.results;
+		let results = fetchResults.data.results;
+
+		if( this.useCache ){
+			this.queryCache[queryHash] = results;
+		}
+
+		return results;
+	}
+
+	async getAllStudents(){
+		return await this.search("");
 	}
 
 }
