@@ -1,0 +1,29 @@
+{
+  "name": "talos-api",
+  "version": "1.0.0",
+  "description": "A wrapper library for communicating with the Talos API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abir-taheer/talos-api.git"
+  },
+  "keywords": [
+    "talos",
+    "students",
+    "api",
+    "request"
+  ],
+  "author": "Abir Taheer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abir-taheer/talos-api/issues"
+  },
+  "homepage": "https://github.com/abir-taheer/talos-api#readme",
+  "dependencies": {
+    "axios": "^0.19.1",
+    "set-cookie-parser": "^2.4.1"
+  }
+}
