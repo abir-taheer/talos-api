@@ -1,5 +1,5 @@
 {
-  "name": "talos-api",
+  "name": "talos-js",
   "version": "1.0.0",
   "description": "A wrapper library for communicating with the Talos API",
   "main": "index.js",
@@ -25,5 +25,6 @@
   "dependencies": {
     "axios": "^0.19.1",
     "set-cookie-parser": "^2.4.1"
-  }
+  },
+  "devDependencies": {}
 }
