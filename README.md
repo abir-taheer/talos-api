@@ -1,4 +1,4 @@
-# talos-api
+# talos-js
 A wrapper for communicating with the Talos API
 
 ## Why use it? 
