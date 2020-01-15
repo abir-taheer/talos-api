@@ -22,7 +22,7 @@ It mimics the interactions of a user performing these actions manually
 ## How to use it
 
 ```javascript
-const Talos = require("talos-api");
+const Talos = require("talos-js");
 
 const api = new Talos("username@stuy.edu", "password");
 
